@@ -1,11 +1,13 @@
 package com.example.agecalculator
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.agecalculator.databinding.ActivityMainBinding
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,21 +23,53 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun datePicker(){
 
         val myCalendar = Calendar.getInstance()
         val year = myCalendar.get(Calendar.YEAR)
         val month = myCalendar.get(Calendar.MONTH)
         val day = myCalendar.get(Calendar.DAY_OF_MONTH)
-        DatePickerDialog(this,
-       { view, year, month, day ->
+        val dpd = DatePickerDialog(this,
+       { _, selectedYear, selectedMonth, selectedDay ->
 
-           Toast.makeText(this, "Date Picked Successfully", Toast.LENGTH_SHORT).show()
+
+           val selectedDate = "$selectedDay/${selectedMonth+1}/$selectedYear"
+
+           //Here capitalization of mm yy and dd is important because it changes values
+           val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
+
+           val theDate = sdf.parse(selectedDate)
+
+           theDate?.let {
+
+               val selectedDateInMinutes = theDate.time / 60000
+
+               val currentDate = sdf.parse(sdf.format(System.currentTimeMillis()))
+
+               currentDate?.let {
+                   val currentDateInMinutes = currentDate.time / 60000
+
+                   val differenceInMinutes = currentDateInMinutes - selectedDateInMinutes
+
+                   binding.inMinutes.text = "$differenceInMinutes minutes"
+               }
+
+
+
+           }
+
+
        },
             year,
             month,
             day
-            ).show()
+            )
+
+        dpd.datePicker.maxDate = System.currentTimeMillis() - 86400000
+        dpd.show()
+
+
 
 
     }
